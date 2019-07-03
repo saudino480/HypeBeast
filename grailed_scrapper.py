@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import csv
 import re
 import time
+import random
 
 driver = webdriver.Chrome(r"C:/chromedriver/chromedriver.exe")
 
@@ -27,9 +28,9 @@ while True:
 		index = index + 1
 		driver.execute_script("window.scrollTo(0,1000)")
 		# Find all the listings on the page
-		time.sleep(30)
+		time.sleep(random.randint(8, 20))
 		listings = driver.find_elements_by_xpath('//div[@class="feed-item"]')
-		print(listings[30:32])
+		#print(listings[30:32])
 		for listing in listings:
 			listing_dict = {}
 			designer = listing.find_element_by_xpath('.//h3[@class="listing-designer truncate"]').text
@@ -52,9 +53,13 @@ while True:
 			except:
 				date = listing.find_element_by_xpath('.//span[@class="date-ago"]').text
 
+
+			url = listing.find_element_by_xpath('.//a').get_attribute('href')
+
 			listing_dict['designer'] = designer
 			listing_dict['description'] = description
 			listing_dict['size'] = size
+			listing_dict['url'] = url
 
 			#fill the dictionary options based on what happened above
 			try:
