@@ -30,7 +30,15 @@ def how_many_scrolls(webdriver):
     return((total_items // items_on_page) + 1)
 
 
+def morethanFifty(webdriver):
+    total_items_raw = webdriver.find_element_by_xpath('//h3[@class="-summary"]').text
+    temp = re.search("\d+", total_items_raw)
+    total_items = int(temp.group())
 
+    if total_items > 50:
+        return(True)
+    else:
+        return(False)
 
 def listing_processing(listings, writer):
     for listing in listings:
