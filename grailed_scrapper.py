@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 
 import csv
 import re
@@ -12,6 +13,8 @@ driver = webdriver.Chrome(r"C:/chromedriver/chromedriver.exe")
 
 driver.get("https://www.grailed.com/categories/short-sleeve-t-shirts")
 
+driver.execute_script("window.scrollTo(0,1000)")
+
 total_items_raw = driver.find_element_by_xpath('//h3[@class="-summary"]').text
 temp = re.search("\d+", total_items_raw)
 total_items = int(temp.group())
@@ -20,16 +23,34 @@ print(total_pages)
 
 csv_file = open('hypebeast.csv', 'w', encoding='utf-8', newline='')
 writer = csv.writer(csv_file)
+last_scrapped = ""
+
 
 index = 1
 while True:
 	try:
-		print("Scraping Page number " + str(index))
+		if index > 2:
+			break
+		print("I've scrolled " + str(index) +" times!")
 		index = index + 1
-		driver.execute_script("window.scrollTo(0,1000)")
 		# Find all the listings on the page
-		time.sleep(random.randint(8, 20))
+
+		#actual timer for implementation
+		time.sleep(random.randint(4, 8))
+
+
 		listings = driver.find_elements_by_xpath('//div[@class="feed-item"]')
+		print("Listings has: ", len(listings))
+		ActionChains(driver).move_to_element(driver.find_element_by_xpath('.//div[@class="feed-item empty-item"]')).perform()
+
+		if (last_scrapped in listings):
+			idx = listings.index(last_scrapped) + 1
+			#listings = listings[idx:]
+			print("I trimmed my list of ", str(idx), " entries!")
+		else:
+			print("I did not trim my list :(")
+		last_scrapped = listings[-1]
+
 		#print(listings[30:32])
 		for listing in listings:
 			listing_dict = {}
@@ -79,9 +100,10 @@ while True:
 
 			writer.writerow(listing_dict.values())
 
-		# move to the next page after we get all the information we need.
-		new_page = "https://www.grailed.com/categories/short-sleeve-t-shirts" + "?page=" + str(index)
-		driver.get(new_page)
+
+		# move to the next page after we get all the information we need. (LEGACY)
+		#new_page = "https://www.grailed.com/categories/short-sleeve-t-shirts" + "?page=" + str(index)
+		#driver.get(new_page)
 
 	except Exception as e:
 		print(e)
