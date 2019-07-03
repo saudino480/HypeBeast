@@ -7,7 +7,7 @@ import csv
 import re
 import time
 
-driver = webdriver.Chrome()
+driver = webdriver.Chrome(r"C:/chromedriver/chromedriver.exe")
 
 driver.get("https://www.grailed.com/categories/short-sleeve-t-shirts")
 
