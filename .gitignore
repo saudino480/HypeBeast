@@ -1,3 +1,9 @@
 
 *.csv
 *.log
+*.pyc
+*.stackdump
+*.log
+*.log
+test.py
+temp.py
