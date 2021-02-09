@@ -9,8 +9,24 @@ import re
 import time
 import os
 
+'''
+Helper functions for the main webscrapper.
+'''
 
 def url_smartclick(webdriver, url):
+    '''
+    Helps navigate around web elements that like to crash the scraper.
+    Attempts to click normally, and if the element is not in view it will force
+    the element into view, allowing it to be clicked.
+    
+    --------------------------------------------------------------------------------------------
+    Input:
+    webdriver: Selenium webdriver object
+    url: Selenium "child" object, points to page you are currently on.
+    --------------------------------------------------------------------------------------------
+    Output:
+    NA: Function is for navigation, not returning values.
+    '''
 	try:
 		url.find_element_by_xpath(".//div[@class='indicator']").click()
 		print("url_smartclick," " 1")
@@ -25,6 +41,19 @@ def url_smartclick(webdriver, url):
 
 
 def click_to_designers(webdriver):
+    '''
+    Navigates towards the sub-menu on the website that contains the "filter by designer"
+    section.
+    
+    --------------------------------------------------------------------------------------------
+    Input:
+    webdriver: Selenium webdriver object
+    --------------------------------------------------------------------------------------------
+    Output:
+    return: List of all the different designers that are available for selection in the submenu.
+    Allows us to build a list, and create a smart list that allows us to intellegently restart
+    the webscrapper if it crashes.
+    '''
 	designer_menu = webdriver.find_element_by_xpath('//div[@class="designers-wrapper _collapsed"]')
 	designer_menu_button = designer_menu.find_element_by_xpath('.//div[@class="-collapsible-target"]')
 	designer_menu_button.click()
@@ -46,6 +75,17 @@ def click_to_designers(webdriver):
 
 
 def click_designers_menu(webdriver):
+    '''
+    Specifically clicks open the panel that contains the designer's names.
+    
+    --------------------------------------------------------------------------------------------
+    Input:
+    webdriver: Selenium webdriver object
+    
+    --------------------------------------------------------------------------------------------
+    Output:
+    returns: all items contained in the designer "pop-out" tab.
+    '''
 	designer_cat_button = webdriver.find_element_by_xpath('//button[@title="View all designers"]')
 	designer_cat_button.click()
 
@@ -60,6 +100,19 @@ def click_designers_menu(webdriver):
 	return(temp.find_element_by_xpath('.//div[@class="content"]'))
 
 def how_many_scrolls(webdriver):
+    '''
+    Simple method that allows for the tracking of how many brands have been processed,
+    and how many scrolls have been completed already.
+    
+    --------------------------------------------------------------------------------------------
+    Input:
+    webdriver: Selenium Webdriver object
+    
+    --------------------------------------------------------------------------------------------
+    Output:
+    returns: number of scrolls completed compared to the total items overall.
+    '''
+    
 	total_items_raw = webdriver.find_element_by_xpath('//h3[@class="-summary"]').text
 	temp = re.search("\d+", total_items_raw)
 	total_items = int(temp.group())
@@ -73,6 +126,19 @@ def how_many_scrolls(webdriver):
 
 
 def morethanN(webdriver, n):
+    '''
+    Custom function to make sure that "more than N" objects exist before it
+    attempts to do a scrape of those designers.
+    
+    --------------------------------------------------------------------------------------------
+    Input:
+    webdriver: Selenium webdriver element
+    n: threshold number, integer.
+    
+    --------------------------------------------------------------------------------------------
+    Output:
+    returns: true if number of objects in view is more than n, otherwise false
+    '''
 	total_items_raw = webdriver.find_element_by_xpath('//h3[@class="-summary"]').text
 	temp = re.search("\d+", total_items_raw)
 	total_items = int(temp.group())
@@ -83,6 +149,29 @@ def morethanN(webdriver, n):
 		return(False)
 
 def smartclick(designer, last_designer, webdriver):
+    '''
+    Workaround function to help the program crash, while packaging a
+    nested try/except block in some simple packaging.
+    
+    Tries to click the first element normally, otherwise attempts to
+    scroll the last element to view. If that fails, attempt to reopen
+    the designer filter menu, wait for the object to load, then try to
+    click again. If that fails, attempt to reopen the designer filter
+    menu, wait, scroll to the last designer in view, wait for the load
+    time, then attempt to click.
+    
+    --------------------------------------------------------------------------------------------
+    Input:
+    designer: Selenium web element object pointing to the checkbox of
+    a specific designer.
+    last_designer: the last designer in view. Frequently needs to be
+    scrolled to because objects partially out of view crash the client.
+    webdriver: Selenium web driver object.
+      
+    --------------------------------------------------------------------------------------------
+    Output:
+    returns: NA
+    '''
 	try:
 		designer.click()
 	except:
@@ -103,6 +192,21 @@ def smartclick(designer, last_designer, webdriver):
 
 
 def listing_cleaner(listings, last_scrapped):
+    '''
+    Updates the current "list to be scraped" of designers
+    of those that have been read.
+    Only works if the last scraped thing is in the listings.
+    
+    input:
+    listings: List of all the items listed for sale on the visible page as Selenium objects.
+    last_scrapped: Last item on the page, usually the last item scrapped before scrolling.
+    
+    output:
+    listings: trimmed listings based on last scrapped
+    last_scrapped: last item of the new list, for trimming
+    purposes.
+    '''
+    
 	if (last_scrapped in listings):
 		idx = listings.index(last_scrapped) + 1
 		listings = listings[idx:]
@@ -112,7 +216,19 @@ def listing_cleaner(listings, last_scrapped):
 	last_scrapped = listings[-1]
 	return listings, last_scrapped
 
-def listing_processing(listings, writer):
+def listing_processing(listings, writer): 
+    '''
+    Takes a list of products on the page, and scrape them individually.
+    
+    --------------------------------------------------------------------------------------------
+    Input:
+    listings: List of all the items listed for sale on the visible page as Selenium objects.
+    writer: Selenium helper object for writing to file.
+    
+    --------------------------------------------------------------------------------------------
+    Output:
+    writer: Selenium helper object for writing to file.
+    '''
 	for listing in listings:
 		listing_dict = {}
 		designer = listing.find_element_by_xpath('.//h3[@class="listing-designer truncate"]').text

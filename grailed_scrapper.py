@@ -13,6 +13,7 @@ import os.path
 
 time.sleep(5)
 
+#switch depending on whether I'm running on Mac or PC
 driver = webdriver.Chrome(r"C:/chromedriver/chromedriver.exe")
 #driver = webdriver.Chrome()
 
@@ -26,7 +27,7 @@ time.sleep(2)
 #move designers into view
 ActionChains(driver).move_to_element(driver.find_element_by_xpath('//div[@class="show-only-wrapper"]')).perform()
 
-#close the footer
+#close the footer -- it intercepts the click and crashes the driver
 footer_begone = driver.find_element_by_xpath('//div[@class="TrustStickyFooter"]')
 footer_close = footer_begone.find_element_by_xpath('.//a[@class="--close"]')
 footer_close.click()
@@ -38,6 +39,9 @@ temp = click_to_designers(driver)
 
 time.sleep(1)
 
+# uncomment if you are trying to repeatedly run the scraper
+# allows you to scroll past designers that you have already
+# scrapped the data for.
 
 #scroll_to_last_csv(driver, "C:\\Docker\\webscrapping")
 
@@ -47,7 +51,8 @@ time.sleep(1)
 time.sleep(1)
 last_designer = ""
 
-#list of CSVs to attempt to string scrolls together
+# List of already scrapped CSVs in order to speed up the scrapping process.
+# Used to string scrolls together to where you left off scraping
 files = os.listdir("C:\\Docker\\webscrapping")
 files_csv = [x for x in files if x[-3:] == "csv"]
 designers_csv_list = []
